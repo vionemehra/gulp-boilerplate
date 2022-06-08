@@ -37,7 +37,7 @@ task('compile-html', function() {
   .pipe(dest(paths.output.html))
 });
 task('compile-scss', function(){
-  return src(isProd ? paths.entry.scss : [paths.entry.scss, paths.entry.com])
+  return src(isProd ? paths.entry.scss : [paths.entry.scss, paths.entry.commonThemeCSS])
   .pipe(isProd ? noop() : sourcemaps.init())
   .pipe(postcss())
   .pipe(sass.sync().on('error', sass.logError))

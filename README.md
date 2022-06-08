@@ -25,7 +25,7 @@ To run and watch page in developement
 ```
 To clean /dist folder
 ```bash
-  npm run clean:dist
+  npm run clean
 ```
 
 

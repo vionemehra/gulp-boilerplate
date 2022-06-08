@@ -8,7 +8,7 @@
     "css:build": "gulp build-css --env prod",
     "dev": "gulp dev --env dev",
     "build": "gulp build --env prod",
-    "clean:dist": "rm -rf dist"
+    "clean": "rm -rf dist"
   },
   "keywords": [],
   "author": "",
