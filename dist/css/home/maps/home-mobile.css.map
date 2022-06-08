@@ -1,1 +1,0 @@
-{"version":3,"sources":["home-mobile.scss","../_variable.scss"],"names":[],"mappings":"AAEA;EACE,OCHK","file":"../home-mobile.css","sourcesContent":["@use '../variable' as *;\r\n\r\np {\r\n  color: $pink;\r\n}","$pink: #863b09 !default;"]}

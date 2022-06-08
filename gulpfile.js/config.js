@@ -30,7 +30,7 @@ const PATHS = {
     port: 2500,
   },
   watch: {
-    ejs: ejs,
+    ejs: src + `pages/**/*`,
     scss: src + `scss/**/*`
   },
   dist: dist,
