@@ -29,15 +29,15 @@ task('reload-browser', function(callback) {
   browserSync.reload();
   callback;
 });
-task('compile-html', function() {
+task('page-html', function() {
   return src(paths.entry.ejs)
   .pipe(ejs({ pageName: paths.entry.name, pageTitle: paths.entry.title, prod: isProd }))
   .pipe(rename({extname: '.html'}))
   .pipe(isProd ? htmlmin({removeComments: true}) : noop())
   .pipe(dest(paths.output.html))
 });
-task('compile-scss', function(){
-  return src(isProd ? paths.entry.scss : [paths.entry.scss, paths.entry.commonThemeCSS])
+task('page-scss', function(){
+  return src(paths.entry.scss)
   .pipe(isProd ? noop() : sourcemaps.init())
   .pipe(postcss())
   .pipe(sass.sync().on('error', sass.logError))
@@ -46,13 +46,23 @@ task('compile-scss', function(){
   .pipe(isProd ? noop() : sourcemaps.write('./maps'))
   .pipe(dest(paths.output.css))
 });
-task('compile-js', function(){
+task('page-js', function(){
   return src(paths.entry.js)
   .pipe(dest(paths.output.js))
 });
-task('compile-assets', function() {
+task('page-assets', function() {
   return src(paths.entry.assets)
   .pipe(dest(paths.output.assets))
+});
+task('commonTheme-scss', function(){
+  return src(paths.entry.commonThemeCSS)
+  .pipe(isProd ? noop() : sourcemaps.init())
+  .pipe(postcss())
+  .pipe(sass.sync().on('error', sass.logError))
+  .pipe(isProd ? cleanCSS() : noop())
+  .pipe(rename({extname: '.css'}))
+  .pipe(isProd ? noop() : sourcemaps.write('./maps'))
+  .pipe(dest(paths.output.commonThemeCSS))
 });
 task('clean-css', function(){
   return del(paths.output.css)  
@@ -78,24 +88,39 @@ task('build-css', function(callback){
 });
 task('page:compile', function(callback) {
   runSequence(
-      'compile-html',
-      'compile-scss',
-      'compile-js',
-      'compile-assets',
+      'page-html',
+      'page-scss',
+      'commonTheme-scss',
+      'page-js',
+      'page-assets',
       callback
   );
 });
 task('page:watch', function() {
   watch(paths.watch.ejs, function(callback) {
     runSequence(
-        'compile-html',
+        'page-html',
         'reload-browser',
         callback
       );
   });
   watch(paths.watch.scss, function(callback) {
     runSequence(
-        'compile-scss',
+        'page-scss',
+        'reload-browser',
+        callback
+      );
+  });
+  watch(paths.watch.assets, function(callback) {
+    runSequence(
+        'page-assets',
+        'reload-browser',
+        callback
+      );
+  });
+  watch(paths.watch.js, function(callback) {
+    runSequence(
+        'page-js',
         'reload-browser',
         callback
       );

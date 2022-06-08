@@ -22,7 +22,8 @@ const PATHS = {
     html: dist,
     css: dist + `css/${fileName}/`,
     js: dist + `js/${fileName}/`,
-    assets: dist + `assets/${fileName}/`
+    assets: dist + `assets/${fileName}/`,
+    commonThemeCSS:  dist + `css/commonTheme/`,
   },
   browser: {
     baseDir: dist,
@@ -31,7 +32,9 @@ const PATHS = {
   },
   watch: {
     ejs: src + `pages/**/*`,
-    scss: src + `scss/**/*`
+    scss: src + `scss/**/*`,
+    assets: src + `scss/**/*`,
+    js: src + `js/**/*`
   },
   dist: dist,
 };
