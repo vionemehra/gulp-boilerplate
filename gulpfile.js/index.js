@@ -1,5 +1,6 @@
-const { task, src, dest, watch, series, parallel } = require('gulp');
-const {paths} = require('./config.js');
+const { task, src, dest, watch, series } = require('gulp');
+const {paths, settings} = require('./config.js');
+const cache = require("gulp-cached");
 const browserSync = require('browser-sync').create();
 const del = require('del');
 const rename = require('gulp-rename');
@@ -14,7 +15,12 @@ const noop = require("gulp-noop");
 const args = require('yargs').argv;
 const isProd = args.env === "prod";
 
-task('open-browser', function(callback) {
+task('clear-cache', function(cb) {
+  cache.caches = {};
+  cb();
+});
+
+task('open-server', function() {
   browserSync.init({
     server: {
         baseDir: paths.browser.baseDir,
@@ -23,20 +29,25 @@ task('open-browser', function(callback) {
     port: paths.browser.port,
     open: true
   });
-  callback
 });
-task('reload-browser', function(callback) {
+task('reload-server', function(cb) {
   browserSync.reload();
-  callback;
+  cb();
 });
-task('page-html', function() {
+task('page-html', function(done) {
+
+  if (!settings.ejs) return done();
+
   return src(paths.entry.ejs)
   .pipe(ejs({ pageName: paths.entry.name, pageTitle: paths.entry.title, prod: isProd }))
   .pipe(rename({extname: '.html'}))
   .pipe(isProd ? htmlmin({removeComments: true}) : noop())
   .pipe(dest(paths.output.html))
 });
-task('page-scss', function(){
+task('page-scss', function(done){
+
+  if (!settings.scss) return done();
+
   return src(paths.entry.scss)
   .pipe(isProd ? noop() : sourcemaps.init())
   .pipe(postcss())
@@ -46,15 +57,24 @@ task('page-scss', function(){
   .pipe(isProd ? noop() : sourcemaps.write('./maps'))
   .pipe(dest(paths.output.css))
 });
-task('page-js', function(){
+task('page-js', function(done){
+
+  if (!settings.js) return done();
+  
   return src(paths.entry.js)
   .pipe(dest(paths.output.js))
 });
-task('page-assets', function() {
+task('page-assets', function(done){
+
+  if (!settings.assets) return done();
+  
   return src(paths.entry.assets)
   .pipe(dest(paths.output.assets))
 });
-task('commonTheme-scss', function(){
+task('commonTheme-scss', function(done){
+
+  if (!settings.commonTheme) return done();
+  
   return src(paths.entry.commonThemeCSS)
   .pipe(isProd ? noop() : sourcemaps.init())
   .pipe(postcss())
@@ -70,70 +90,70 @@ task('clean-css', function(){
 task('clean-dist', function(){
   return del(paths.dist)  
 });
-task('compile-css', function(callback){
+task('compile-css', function(cb){
   watch(paths.watch.scss, function() {
     runSequence(
       'clean-css',
       'compile-scss',
-      callback
+      cb
     )
   });
 });
-task('build-css', function(callback){
+task('build-css', function(cb){
     runSequence(
       'clean-css',
       'compile-scss',
-      callback
+      cb
     )
 });
-task('page:compile', function(callback) {
+task('page:compile', function(cb) {
   runSequence(
-      'page-html',
-      'page-scss',
-      'commonTheme-scss',
-      'page-js',
-      'page-assets',
-      callback
+    'clear-cache',
+    'page-html',
+    'page-scss',
+    'commonTheme-scss',
+    'page-js',
+    'page-assets',
+    cb
   );
 });
 task('page:watch', function() {
-  watch(paths.watch.ejs, function(callback) {
+  watch(paths.watch.ejs, function(cb) {
     runSequence(
         'page-html',
-        'reload-browser',
-        callback
+        'reload-server',
+        cb
       );
   });
-  watch(paths.watch.scss, function(callback) {
+  watch(paths.watch.scss, function(cb) {
     runSequence(
         'page-scss',
-        'reload-browser',
-        callback
+        'reload-server',
+        cb
       );
   });
-  watch(paths.watch.assets, function(callback) {
-    runSequence(
-        'page-assets',
-        'reload-browser',
-        callback
-      );
-  });
-  watch(paths.watch.js, function(callback) {
+  watch(paths.watch.js, function(cb) {
     runSequence(
         'page-js',
-        'reload-browser',
-        callback
+        'reload-server',
+        cb
+      );
+  });
+  watch(paths.watch.assets, function(cb) {
+    runSequence(
+        'page-assets',
+        'reload-server',
+        cb
       );
   });
 });
-task('page:dev', function(callback) {
+task('dev', function(cb) {
   runSequence(
     'page:compile',
-    ['open-browser','page:watch'],
-    callback
+    ['open-server', 'page:watch'],
+    cb
   );
 });
-exports.dev = series('clean-dist', parallel('page:compile', 'open-browser','page:watch'));
 exports.build = series('clean-dist', 'page:compile');
 
 

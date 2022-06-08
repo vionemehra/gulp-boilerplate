@@ -1,7 +1,7 @@
 const fileName = 'home';
 const pageName = `${fileName}-web.html`;
 const src =  'src/';
-const ejs = [src + `pages/${fileName}/*.ejs`];
+const ejs = [src + `views/${fileName}/*.ejs`];
 const scss = src + `scss/${fileName}/*.scss`;
 const commonThemeCSS = src + `scss/commonTheme/*.scss`;
 const js = [src + `js/${fileName}.js`];
@@ -31,14 +31,31 @@ const PATHS = {
     port: 2500,
   },
   watch: {
-    ejs: src + `pages/**/*`,
-    scss: src + `scss/**/*`,
-    assets: src + `scss/**/*`,
-    js: src + `js/**/*`
+    ejs: src + `views/**/**/*.ejs`,
+    scss: src + `scss/**/**/*.scss`,
+    assets: src + `assets/**`,
+    js: src + `js/**/*.js`
   },
   dist: dist,
 };
 
-module.exports = {
-  paths: PATHS,
+const SETTINGS = {
+  clean: true,
+  ejs: true,
+  scss: true,
+  js: true,
+  assets: true,
+  commonTheme: true,
+  reload: true
 };
+
+// module.exports = {
+//   paths: PATHS,
+// };
+
+// module.exports = {
+//   setting: SETTINGS,
+// };
+
+exports.paths = PATHS;
+exports.settings = SETTINGS;
